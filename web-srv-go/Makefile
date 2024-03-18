@@ -1,11 +1,43 @@
+# Variables
+NAME=go-web-server
+REPO=sundrop/$(NAME)
+VERSION_FILE=VERSION
+VERSION=$(shell cat $(VERSION_FILE))
+CONTAINER_NAME=go-srv
+LOCAL_PORT=8080
+
+rebuild:
+	docker build --no-cache -t $(NAME):$(VERSION) -f docker/Dockerfile .
+
 build:
-	docker build --no-cache -t my-go-web-server -f docker/Dockerfile .
+	docker build -t $(NAME):$(VERSION) -f docker/Dockerfile .
 
 run: stop rm build
-	docker run -d -p 8080:80 --name go-srv my-go-web-server
+	docker run -d -p $(LOCAL_PORT):80 --name $(CONTAINER_NAME) go-srv $(NAME):$(VERSION)
 
 stop:
-	docker kill go-srv || true
+	docker kill $(CONTAINER_NAME) || true
 
 rm:
-	docker rm go-srv || true
+	docker rm $(CONTAINER_NAME) || true
+
+tag: bump-version build
+	@$(eval VERSION=$(shell cat $(VERSION_FILE)))
+	docker tag $(NAME):$(VERSION) $(REPO):$(VERSION)
+	docker push $(REPO):$(VERSION)
+
+bump-version:
+	@echo $(VERSION) | awk -F. '{printf("%d.%d.%d", $$1, $$2, $$3+1)}' > $(VERSION_FILE)
+
+git-tag:
+	git add $(VERSION_FILE)
+	git commit -m "Bump version to $(VERSION)"
+	git tag -a "v$(VERSION)" -m "Version $(VERSION)"
+	git push
+
+push:
+	docker push $(REPO):$(VERSION)
+	git push
+
+print-version:
+	@echo $(VERSION)
