@@ -25,4 +25,4 @@ COPY --from=builder /app/app /
 
 ENTRYPOINT ["/app"]
 
-EXPOSE 8080
+EXPOSE 80
