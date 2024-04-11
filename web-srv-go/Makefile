@@ -4,7 +4,7 @@ REPO=sundrop/$(NAME)
 VERSION_FILE=VERSION
 VERSION=$(shell cat $(VERSION_FILE))
 CONTAINER_NAME=go-srv
-LOCAL_PORT=8080
+LOCAL_PORT=8888
 
 rebuild:
 	docker build --no-cache -t $(NAME):$(VERSION) -f docker/Dockerfile .
@@ -13,7 +13,7 @@ build:
 	docker build -t $(NAME):$(VERSION) -f docker/Dockerfile .
 
 run: stop rm build
-	docker run -d -p $(LOCAL_PORT):80 --name $(CONTAINER_NAME) go-srv $(NAME):$(VERSION)
+	docker run -d -p $(LOCAL_PORT):80 --name $(CONTAINER_NAME) $(NAME):$(VERSION)
 
 stop:
 	docker kill $(CONTAINER_NAME) || true
